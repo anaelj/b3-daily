@@ -125,8 +125,26 @@ function App() {
     await updateDoc(doc(db, "daily_stocks", symbol), updatedStock);
   };
 
+  const getCurrentStockData = async (
+    oldStock: Partial<Stock>,
+    symbol: string
+  ) => {
+    const stockData = await fetchStockData(symbol);
+    const price = stockData?.price || parseFloat(newPrice);
+    const media200 = stockData?.media200;
+    const upside = oldStock.targetPrice
+      ? ((oldStock.targetPrice - price) / price) * 100
+      : undefined;
+    return { price, media200, upside };
+  };
+
   const handleStockUpdate = async (symbol: string, updates: Partial<Stock>) => {
-    await updateDoc(doc(db, "daily_stocks", symbol), updates);
+    const onLineData = getCurrentStockData(updates, symbol);
+
+    await updateDoc(doc(db, "daily_stocks", symbol), {
+      ...updates,
+      onLineData,
+    });
   };
 
   return (
