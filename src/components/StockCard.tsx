@@ -63,8 +63,19 @@ export function StockCard({
               Distância (+): {stock.distancePositive.toFixed(2)}%
             </p>
             {stock.media200 && (
-              <p className="text-gray-600">
-                Média 200: R$ {stock.media200.toFixed(2)}
+              <p
+                style={{ fontSize: "12px" }}
+                className={
+                  stock?.averagePercent200 > stock.distancePositive ||
+                  stock?.averagePercent200 < -1 * stock.distanceNegative
+                    ? "text-green-600"
+                    : "text-gray-600"
+                }
+              >
+                M.200: R${" "}
+                {`${stock.media200.toFixed(
+                  2
+                )} [${stock?.averagePercent200.toFixed(2)}%]`}
               </p>
             )}
           </div>
@@ -74,7 +85,11 @@ export function StockCard({
                 <p className="text-gray-600">
                   Preço Alvo: R$ {stock.targetPrice.toFixed(2)}
                 </p>
-                <p className="text-gray-600">
+                <p
+                  className={
+                    stock?.upside > 20 ? "text-green-600" : "text-gray-600"
+                  }
+                >
                   Upside: {stock.upside?.toFixed(2)}%
                 </p>
               </>

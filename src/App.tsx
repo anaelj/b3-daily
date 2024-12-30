@@ -6,7 +6,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ArrowUpDownIcon } from "lucide-react";
 import { db } from "./lib/firebase";
 import { StockCard } from "./components/StockCard";
 import type { Stock } from "./types/stock";
@@ -130,10 +130,12 @@ function App() {
     const stockData = await fetchStockData(symbol);
     const currentPrice = stockData?.price || parseFloat(newPrice);
     const media200 = stockData?.media200;
+    const averagePercent200 =
+      ((currentPrice - (media200 || 0)) * 100) / currentPrice;
     const upside = oldStock.targetPrice
       ? ((oldStock.targetPrice - currentPrice) / currentPrice) * 100
       : undefined;
-    return { currentPrice, media200, upside };
+    return { currentPrice, media200, upside, averagePercent200 };
   };
 
   const handleStockUpdate = async (symbol: string, updates: Partial<Stock>) => {
@@ -142,6 +144,12 @@ function App() {
     await updateDoc(doc(db, "daily_stocks", symbol), {
       ...updates,
       ...onLineData,
+    });
+  };
+
+  const refreshPrices = async () => {
+    stocks.map(async (stockItem: Stock) => {
+      await handleStockUpdate(stockItem.symbol, stockItem);
     });
   };
 
@@ -205,6 +213,17 @@ function App() {
               </button>
             </form>
           )}
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => refreshPrices()}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <ArrowUpDownIcon className="w-5 h-5" />
+            Atualizar Preço
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
