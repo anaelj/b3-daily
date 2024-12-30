@@ -8,7 +8,6 @@ export async function fetchInsiderData(symbol: string): Promise<{ soma: number; 
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-
       },
      
     });

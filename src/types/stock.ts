@@ -8,6 +8,7 @@ export interface StockChecklist {
   magicFormula: boolean;
   distanciaMedia200: boolean;
   upside: boolean;
+  plAverage: boolean;
 }
 
 export interface Stock {

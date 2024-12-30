@@ -1,27 +1,36 @@
-import React, { useState } from 'react';
-import { Check, X, Edit2 } from 'lucide-react';
-import type { Stock } from '../types/stock';
-import { EditStockModal } from './EditStockModal';
+import React, { useState } from "react";
+import { Check, X, Edit2 } from "lucide-react";
+import type { Stock } from "../types/stock";
+import { EditStockModal } from "./EditStockModal";
 
 interface StockCardProps {
   stock: Stock;
-  onChecklistChange: (symbol: string, field: keyof Stock['checklist'], value: boolean) => void;
+  onChecklistChange: (
+    symbol: string,
+    field: keyof Stock["checklist"],
+    value: boolean
+  ) => void;
   onStockUpdate: (symbol: string, updates: Partial<Stock>) => void;
 }
 
-export function StockCard({ stock, onChecklistChange, onStockUpdate }: StockCardProps) {
+export function StockCard({
+  stock,
+  onChecklistChange,
+  onStockUpdate,
+}: StockCardProps) {
   const [showEditModal, setShowEditModal] = useState(false);
 
   const checklistItems = [
-    { key: 'insider', label: 'Insider' },
-    { key: 'volume', label: 'Volume' },
-    { key: 'obv', label: 'OBV' },
-    { key: 'adx', label: 'ADX' },
-    { key: 'margemLiquida', label: 'Margem Líquida' },
-    { key: 'dividendYield', label: 'Dividend Yield' },
-    { key: 'magicFormula', label: 'Magic Formula' },
-    { key: 'distanciaMedia200', label: 'Distância Média 200' },
-    { key: 'upside', label: 'Upside' },
+    { key: "insider", label: "Insider" },
+    { key: "volume", label: "Volume" },
+    { key: "obv", label: "OBV" },
+    { key: "adx", label: "ADX" },
+    { key: "margemLiquida", label: "Margem Líquida" },
+    { key: "dividendYield", label: "Dividend Yield" },
+    { key: "magicFormula", label: "Magic Formula" },
+    { key: "distanciaMedia200", label: "Distância Média 200" },
+    { key: "upside", label: "Upside" },
+    { key: "plAverage", label: "PL Médio" },
   ];
 
   return (
@@ -80,10 +89,22 @@ export function StockCard({ stock, onChecklistChange, onStockUpdate }: StockCard
               <div
                 key={key}
                 className="flex items-center space-x-2 cursor-pointer"
-                onClick={() => onChecklistChange(stock.symbol, key as keyof Stock['checklist'], !stock.checklist[key as keyof Stock['checklist']])}
+                onClick={() =>
+                  onChecklistChange(
+                    stock.symbol,
+                    key as keyof Stock["checklist"],
+                    !stock.checklist[key as keyof Stock["checklist"]]
+                  )
+                }
               >
-                <div className={`p-1 rounded ${stock.checklist[key as keyof Stock['checklist']] ? 'bg-green-100' : 'bg-red-100'}`}>
-                  {stock.checklist[key as keyof Stock['checklist']] ? (
+                <div
+                  className={`p-1 rounded ${
+                    stock.checklist[key as keyof Stock["checklist"]]
+                      ? "bg-green-100"
+                      : "bg-red-100"
+                  }`}
+                >
+                  {stock.checklist[key as keyof Stock["checklist"]] ? (
                     <Check className="w-4 h-4 text-green-600" />
                   ) : (
                     <X className="w-4 h-4 text-red-600" />

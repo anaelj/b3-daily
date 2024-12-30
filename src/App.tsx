@@ -1,37 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, doc, setDoc, updateDoc } from 'firebase/firestore';
-import { PlusCircle } from 'lucide-react';
-import { db } from './lib/firebase';
-import { StockCard } from './components/StockCard';
-import type { Stock } from './types/stock';
-import { validateCPF } from './utils/cpf';
-import { fetchStockData } from './services/stockApi';
-import { fetchInsiderData } from './services/insiderApi';
+import React, { useEffect, useState } from "react";
+import {
+  collection,
+  onSnapshot,
+  doc,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { PlusCircle } from "lucide-react";
+import { db } from "./lib/firebase";
+import { StockCard } from "./components/StockCard";
+import type { Stock } from "./types/stock";
+import { validateCPF } from "./utils/cpf";
+import { fetchStockData } from "./services/stockApi";
+import { fetchInsiderData } from "./services/insiderApi";
 
 function App() {
   const [stocks, setStocks] = useState<Stock[]>([]);
-  const [newSymbol, setNewSymbol] = useState('');
-  const [newPrice, setNewPrice] = useState('');
-  const [newTargetPrice, setNewTargetPrice] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [cpfError, setCpfError] = useState('');
+  const [newSymbol, setNewSymbol] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [newTargetPrice, setNewTargetPrice] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [cpfError, setCpfError] = useState("");
+
+  useEffect(() => {
+    const cpfLocal = localStorage.getItem("dailyb3-cpf");
+    if (cpfLocal) setCpf(cpfLocal);
+  }, []);
 
   useEffect(() => {
     if (!cpf) return;
+    localStorage.setItem("dailyb3-cpf", cpf);
 
     const unsubscribe = onSnapshot(
-      collection(db, 'daily_stocks'), 
+      collection(db, "daily_stocks"),
       (snapshot) => {
-        const stocksData = snapshot.docs
-          .map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Stock[];
-        
-        // Filter stocks by CPF
-        const filteredStocks = stocksData.filter(stock => stock.cpf === cpf);
-        
-        // Sort by score in descending order
+        const stocksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Stock[];
+
+        const filteredStocks = stocksData.filter((stock) => stock.cpf === cpf);
+
         setStocks(filteredStocks.sort((a, b) => b.score - a.score));
       }
     );
@@ -39,31 +48,31 @@ function App() {
     return () => unsubscribe();
   }, [cpf]);
 
-  const calculateScore = (checklist: Stock['checklist']): number => {
+  const calculateScore = (checklist: Stock["checklist"]): number => {
     return Object.values(checklist).filter(Boolean).length;
   };
 
   const handleAddStock = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newSymbol || !newPrice || !cpf) return;
     if (!validateCPF(cpf)) {
-      setCpfError('CPF inválido');
+      setCpfError("CPF inválido");
       return;
     }
-    setCpfError('');
+    setCpfError("");
 
     const stockData = await fetchStockData(newSymbol);
     const price = stockData?.price || parseFloat(newPrice);
     const media200 = stockData?.media200;
-    
+
     const targetPrice = newTargetPrice ? parseFloat(newTargetPrice) : undefined;
-    
+
     const newStock: Stock = {
       symbol: newSymbol.toUpperCase(),
       currentPrice: price,
-      distanceNegative: -5, // Default values
-      distancePositive: 5,
+      distanceNegative: -0,
+      distancePositive: 0,
       targetPrice,
       upside: targetPrice ? ((targetPrice - price) / price) * 100 : undefined,
       media200,
@@ -77,53 +86,60 @@ function App() {
         magicFormula: false,
         distanciaMedia200: false,
         upside: false,
+        plAverage: false,
       },
       score: 0,
       cpf,
     };
 
-    await setDoc(doc(db, 'daily_stocks', newStock.symbol), newStock);
-    
-    setNewSymbol('');
-    setNewPrice('');
-    setNewTargetPrice('');
+    await setDoc(doc(db, "daily_stocks", newStock.symbol), newStock);
+
+    setNewSymbol("");
+    setNewPrice("");
+    setNewTargetPrice("");
   };
 
-  useEffect(() => {
-    fetchInsiderData('ALOS3')
-  }, [])
-  
+  // useEffect(() => {
+  //   fetchInsiderData("ALOS3");
+  // }, []);
 
-  const handleChecklistChange = async (symbol: string, field: keyof Stock['checklist'], value: boolean) => {
-    const stock = stocks.find(s => s.symbol === symbol);
+  const handleChecklistChange = async (
+    symbol: string,
+    field: keyof Stock["checklist"],
+    value: boolean
+  ) => {
+    const stock = stocks.find((s) => s.symbol === symbol);
     if (!stock) return;
 
     const updatedChecklist = {
       ...stock.checklist,
-      [field]: value
+      [field]: value,
     };
 
     const updatedStock = {
       ...stock,
       checklist: updatedChecklist,
-      score: calculateScore(updatedChecklist)
+      score: calculateScore(updatedChecklist),
     };
 
-    await updateDoc(doc(db, 'daily_stocks', symbol), updatedStock);
+    await updateDoc(doc(db, "daily_stocks", symbol), updatedStock);
   };
 
   const handleStockUpdate = async (symbol: string, updates: Partial<Stock>) => {
-    await updateDoc(doc(db, 'daily_stocks', symbol), updates);
+    await updateDoc(doc(db, "daily_stocks", symbol), updates);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold text-gray-800">Análise de Ações</h1>
-        
+
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="mb-4">
-            <label htmlFor="cpf" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="cpf"
+              className="block text-sm font-medium text-gray-700"
+            >
               CPF
             </label>
             <input
@@ -134,7 +150,9 @@ function App() {
               onChange={(e) => setCpf(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2 border"
             />
-            {cpfError && <p className="mt-1 text-sm text-red-600">{cpfError}</p>}
+            {cpfError && (
+              <p className="mt-1 text-sm text-red-600">{cpfError}</p>
+            )}
           </div>
 
           {cpf && validateCPF(cpf) && (
