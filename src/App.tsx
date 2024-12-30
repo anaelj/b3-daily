@@ -62,20 +62,13 @@ function App() {
     }
     setCpfError("");
 
-    const stockData = await fetchStockData(newSymbol);
-    const price = stockData?.price || parseFloat(newPrice);
-    const media200 = stockData?.media200;
-
     const targetPrice = newTargetPrice ? parseFloat(newTargetPrice) : undefined;
 
-    const newStock: Stock = {
+    const newStock: Partial<Stock> = {
       symbol: newSymbol.toUpperCase(),
-      currentPrice: price,
       distanceNegative: -0,
       distancePositive: 0,
       targetPrice,
-      upside: targetPrice ? ((targetPrice - price) / price) * 100 : undefined,
-      media200,
       checklist: {
         insider: false,
         volume: false,
@@ -92,7 +85,12 @@ function App() {
       cpf,
     };
 
-    await setDoc(doc(db, "daily_stocks", newStock.symbol), newStock);
+    const onLineData = await getCurrentStockData(newStock, newSymbol);
+
+    await setDoc(doc(db, "daily_stocks", newStock.symbol), {
+      ...newStock,
+      ...onLineData,
+    });
 
     setNewSymbol("");
     setNewPrice("");
@@ -130,20 +128,20 @@ function App() {
     symbol: string
   ) => {
     const stockData = await fetchStockData(symbol);
-    const price = stockData?.price || parseFloat(newPrice);
+    const currentPrice = stockData?.price || parseFloat(newPrice);
     const media200 = stockData?.media200;
     const upside = oldStock.targetPrice
-      ? ((oldStock.targetPrice - price) / price) * 100
+      ? ((oldStock.targetPrice - currentPrice) / currentPrice) * 100
       : undefined;
-    return { price, media200, upside };
+    return { currentPrice, media200, upside };
   };
 
   const handleStockUpdate = async (symbol: string, updates: Partial<Stock>) => {
-    const onLineData = getCurrentStockData(updates, symbol);
+    const onLineData = await getCurrentStockData(updates, symbol);
 
     await updateDoc(doc(db, "daily_stocks", symbol), {
       ...updates,
-      onLineData,
+      ...onLineData,
     });
   };
 
