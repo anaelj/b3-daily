@@ -28,12 +28,35 @@ function App() {
   const [newTargetPrice, setNewTargetPrice] = useState("");
   const [cpf, setCpf] = useState("");
   const [cpfError, setCpfError] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const cpfLocal = localStorage.getItem("dailyb3-cpf");
     if (cpfLocal) setCpf(cpfLocal);
   }, []);
+
+  const handleSort = (sortField: keyof Stock) => {
+    const stocksSorted = stocksFiltered.sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return bValue - aValue;
+      } else if (typeof aValue === "string" && typeof bValue === "string") {
+        const dateA = new Date(aValue);
+        const dateB = new Date(bValue);
+
+        if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+          return dateA.getTime() - dateB.getTime();
+        }
+
+        return aValue.localeCompare(bValue);
+      }
+
+      return 0;
+    });
+
+    setStocksFiltered([...stocksSorted]);
+  };
 
   useEffect(() => {
     if (!cpf) return;
@@ -49,7 +72,7 @@ function App() {
 
         const filteredStocks = stocksData.filter((stock) => stock.cpf === cpf);
 
-        setStocks(filteredStocks.sort((a, b) => b.score - a.score));
+        setStocks(filteredStocks);
       }
     );
 
@@ -196,25 +219,11 @@ function App() {
         });
       });
 
-      if (sortOrder && sortOrder === "asc") {
-        filtered.sort(
-          (a, b) =>
-            new Date(a.dateLastCheck || 0).getTime() -
-            new Date(b.dateLastCheck || 0).getTime()
-        );
-      } else if (sortOrder === "desc") {
-        filtered.sort(
-          (a, b) =>
-            new Date(b.dateLastCheck || 0).getTime() -
-            new Date(a.dateLastCheck || 0).getTime()
-        );
-      }
-
       setStocksFiltered(filtered);
     };
 
     applyFilters();
-  }, [filters, stocks, sortOrder]);
+  }, [filters, stocks]);
 
   const updateFilter = (key: keyof Stock, value: any) => {
     setFilters((prevFilters) => ({
@@ -315,11 +324,19 @@ function App() {
           </button>
           <button
             type="button"
-            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            onClick={() => handleSort("score")}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
           >
             <ListOrdered className="w-5 h-5" />
-            Ordenar
+            Score
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSort("dateLastCheck")}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <ListOrdered className="w-5 h-5" />
+            Data
           </button>
         </div>
 
