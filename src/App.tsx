@@ -79,6 +79,7 @@ function App() {
       distanceNegative: -0,
       distancePositive: 0,
       targetPrice,
+      currentPrice: 0,
       observerTo: undefined,
       checklist: {
         insider: false,
