@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, X, Edit2 } from "lucide-react";
+import { Check, X, Edit2, Repeat2 } from "lucide-react";
 import type { Stock } from "../types/stock";
 import { EditStockModal } from "./EditStockModal";
 
@@ -19,6 +19,18 @@ export function StockCard({
   onStockUpdate,
 }: StockCardProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return `${date.toLocaleDateString("pt-BR")} ${date.toLocaleTimeString(
+      "pt-BR",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    )}`;
+  };
 
   const checklistItems = [
     { key: "insider", label: "Insider" },
@@ -47,6 +59,33 @@ export function StockCard({
               className="text-gray-600 hover:text-gray-800"
             >
               <Edit2 className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() =>
+                onStockUpdate(stock.symbol, {
+                  ...stock,
+                  dateLastCheck: String(new Date()),
+                })
+              }
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <Repeat2 className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() =>
+                onStockUpdate(stock.symbol, {
+                  ...stock,
+                  observerTo: stock.observerTo === "C" ? "V" : "C",
+                })
+              }
+              style={{
+                background: stock.observerTo === "V" ? "#dc2625" : "#16a34a",
+                color: "#fff",
+                borderRadius: "4px",
+                width: "24px",
+              }}
+            >
+              {stock?.observerTo || "?"}
             </button>
           </div>
         </div>
@@ -130,6 +169,7 @@ export function StockCard({
             ))}
           </div>
         </div>
+        <span>{`Data: ${formatDate(stock?.dateLastCheck)}`}</span>
       </div>
 
       {showEditModal && (

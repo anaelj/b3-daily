@@ -6,7 +6,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { PlusCircle, ArrowUpDownIcon } from "lucide-react";
+import { PlusCircle, ArrowUpDownIcon, Eraser, Filter } from "lucide-react";
 import { db } from "./lib/firebase";
 import { StockCard } from "./components/StockCard";
 import type { Stock } from "./types/stock";
@@ -16,8 +16,9 @@ import { fetchInsiderData } from "./services/insiderApi";
 
 function App() {
   const [stocks, setStocks] = useState<Stock[]>([]);
+  const [stocksFiltered, setStocksFiltered] = useState<Stock[]>([]);
+  const [filters, setFilters] = useState<Partial<Stock>>();
   const [newSymbol, setNewSymbol] = useState("");
-  const [newPrice, setNewPrice] = useState("");
   const [newTargetPrice, setNewTargetPrice] = useState("");
   const [cpf, setCpf] = useState("");
   const [cpfError, setCpfError] = useState("");
@@ -55,7 +56,16 @@ function App() {
   const handleAddStock = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newSymbol || !newPrice || !cpf) return;
+    if (!newSymbol || !cpf) return;
+    if (
+      stocks.find(
+        (item: Stock) => item.symbol.toUpperCase() === newSymbol.toUpperCase()
+      )
+    ) {
+      alert("Empresa já cadastrada");
+      return;
+    }
+
     if (!validateCPF(cpf)) {
       setCpfError("CPF inválido");
       return;
@@ -69,6 +79,7 @@ function App() {
       distanceNegative: -0,
       distancePositive: 0,
       targetPrice,
+      observerTo: undefined,
       checklist: {
         insider: false,
         volume: false,
@@ -93,7 +104,6 @@ function App() {
     });
 
     setNewSymbol("");
-    setNewPrice("");
     setNewTargetPrice("");
   };
 
@@ -116,6 +126,7 @@ function App() {
 
     const updatedStock = {
       ...stock,
+      dateLastCheck: String(new Date()),
       checklist: updatedChecklist,
       score: calculateScore(updatedChecklist),
     };
@@ -128,7 +139,7 @@ function App() {
     symbol: string
   ) => {
     const stockData = await fetchStockData(symbol);
-    const currentPrice = stockData?.price || parseFloat(newPrice);
+    const currentPrice = stockData?.price || 0;
     const media200 = stockData?.media200;
     const averagePercent200 =
       ((currentPrice - (media200 || 0)) * 100) / currentPrice;
@@ -139,12 +150,55 @@ function App() {
   };
 
   const handleStockUpdate = async (symbol: string, updates: Partial<Stock>) => {
-    const onLineData = await getCurrentStockData(updates, symbol);
+    let onLineData;
+    try {
+      onLineData = await getCurrentStockData(updates, symbol);
+    } catch (error) {
+      console.log(error);
+    }
 
     await updateDoc(doc(db, "daily_stocks", symbol), {
       ...updates,
       ...onLineData,
     });
+  };
+
+  useEffect(() => {
+    const applyFilters = () => {
+      if (!filters || Object.keys(filters).length === 0) {
+        setStocksFiltered(stocks);
+        return;
+      }
+
+      const filtered = stocks.filter((stock) => {
+        return Object.entries(filters).every(([key, value]) => {
+          if (value === undefined || value === null) return true;
+          if (key === "dateLastCheck") {
+            const stockDate = new Date(stock[key] || "").toLocaleDateString(
+              "pt-BR"
+            );
+            const filterDate = new Date(String(value)).toLocaleDateString(
+              "pt-BR"
+            );
+            return stockDate === filterDate;
+          }
+          return String(stock[key])
+            .toLowerCase()
+            .includes(String(value).toLowerCase());
+        });
+      });
+
+      setStocksFiltered(filtered);
+    };
+
+    applyFilters();
+  }, [filters, stocks]);
+
+  const updateFilter = (key: keyof Stock, value: any) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [key]: value,
+    }));
   };
 
   const refreshPrices = async () => {
@@ -191,14 +245,6 @@ function App() {
               <input
                 type="number"
                 step="0.01"
-                placeholder="Preço Atual"
-                value={newPrice}
-                onChange={(e) => setNewPrice(e.target.value)}
-                className="flex-1 p-2 border rounded"
-              />
-              <input
-                type="number"
-                step="0.01"
                 placeholder="Preço Alvo (opcional)"
                 value={newTargetPrice}
                 onChange={(e) => setNewTargetPrice(e.target.value)}
@@ -215,7 +261,7 @@ function App() {
           )}
         </div>
 
-        <div>
+        <div style={{ display: "flex", gap: "8px" }}>
           <button
             type="button"
             onClick={() => refreshPrices()}
@@ -224,10 +270,31 @@ function App() {
             <ArrowUpDownIcon className="w-5 h-5" />
             Atualizar Preço
           </button>
+          <button
+            type="button"
+            onClick={() =>
+              updateFilter(
+                "observerTo",
+                filters?.observerTo === "C" ? "V" : "C"
+              )
+            }
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <Filter className="w-5 h-5" />
+            {`Apenas ${filters?.observerTo === "C" ? "vendas" : "compras"}`}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilters({})}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <Eraser className="w-5 h-5" />
+            Limpar filtros
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stocks.map((stock) => (
+          {stocksFiltered.map((stock) => (
             <StockCard
               key={stock.symbol}
               stock={stock}

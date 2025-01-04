@@ -23,6 +23,8 @@ export interface Stock {
   score: number;
   cpf: string;
   media200?: number;
+  observerTo?: "C" | "V";
+  dateLastCheck?: string;
 }
 
 export interface StockAPIResponse {
