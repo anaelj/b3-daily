@@ -80,7 +80,7 @@ function App() {
       distancePositive: 0,
       targetPrice,
       currentPrice: 0,
-      observerTo: undefined,
+      observerTo: "C",
       checklist: {
         insider: false,
         volume: false,
