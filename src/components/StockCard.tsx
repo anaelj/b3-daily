@@ -169,7 +169,9 @@ export function StockCard({
             ))}
           </div>
         </div>
-        <span>{`Data: ${formatDate(stock?.dateLastCheck)}`}</span>
+        <span style={{ fontSize: "10px" }}>{`Data: ${formatDate(
+          stock?.dateLastCheck
+        )}`}</span>
       </div>
 
       {showEditModal && (

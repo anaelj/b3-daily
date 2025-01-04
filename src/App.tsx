@@ -6,7 +6,13 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { PlusCircle, ArrowUpDownIcon, Eraser, Filter } from "lucide-react";
+import {
+  PlusCircle,
+  ArrowUpDownIcon,
+  Eraser,
+  Filter,
+  ListOrdered,
+} from "lucide-react";
 import { db } from "./lib/firebase";
 import { StockCard } from "./components/StockCard";
 import type { Stock } from "./types/stock";
@@ -22,6 +28,7 @@ function App() {
   const [newTargetPrice, setNewTargetPrice] = useState("");
   const [cpf, setCpf] = useState("");
   const [cpfError, setCpfError] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const cpfLocal = localStorage.getItem("dailyb3-cpf");
@@ -189,11 +196,25 @@ function App() {
         });
       });
 
+      if (sortOrder && sortOrder === "asc") {
+        filtered.sort(
+          (a, b) =>
+            new Date(a.dateLastCheck || 0).getTime() -
+            new Date(b.dateLastCheck || 0).getTime()
+        );
+      } else if (sortOrder === "desc") {
+        filtered.sort(
+          (a, b) =>
+            new Date(b.dateLastCheck || 0).getTime() -
+            new Date(a.dateLastCheck || 0).getTime()
+        );
+      }
+
       setStocksFiltered(filtered);
     };
 
     applyFilters();
-  }, [filters, stocks]);
+  }, [filters, stocks, sortOrder]);
 
   const updateFilter = (key: keyof Stock, value: any) => {
     setFilters((prevFilters) => ({
@@ -291,6 +312,14 @@ function App() {
           >
             <Eraser className="w-5 h-5" />
             Limpar filtros
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <ListOrdered className="w-5 h-5" />
+            Ordenar
           </button>
         </div>
 
