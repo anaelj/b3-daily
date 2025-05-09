@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import type { Annotation, Stock } from "../types/stock";
+import { formatDate } from "../lib/dates";
 
 interface EditStockModalProps {
   stock: Stock;
@@ -195,7 +196,7 @@ export function EditStockModal({
                         }}
                       >
                         <span style={{ fontSize: "8px" }}>
-                          {annotation.date.toISOString()}
+                          {`Data: ${formatDate(annotation?.date?.toString())}`}
                         </span>
                         <span>{annotation.text}</span>
                       </div>

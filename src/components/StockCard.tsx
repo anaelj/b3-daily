@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Check, X, Edit2, Repeat2 } from "lucide-react";
 import type { Stock } from "../types/stock";
 import { EditStockModal } from "./EditStockModal";
+import { formatDate } from "../lib/dates";
 
 interface StockCardProps {
   stock: Stock;
@@ -19,18 +20,6 @@ export function StockCard({
   onStockUpdate,
 }: StockCardProps) {
   const [showEditModal, setShowEditModal] = useState(false);
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    return `${date.toLocaleDateString("pt-BR")} ${date.toLocaleTimeString(
-      "pt-BR",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    )}`;
-  };
 
   const checklistItems = [
     { key: "insider", label: "Insider" },
