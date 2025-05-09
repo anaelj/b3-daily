@@ -35,6 +35,13 @@ export interface Stock {
   dividendYieldTarget?: number;
   dividendYieldTargetPercent?: number;
   dividendYieldTargetPrice?: number;
+  annotations?: Annotation[];
+}
+
+export interface Annotation {
+  date: Date;
+  text: string;
+  type: "info" | "warning" | "error";
 }
 
 export interface StockAPIResponse {

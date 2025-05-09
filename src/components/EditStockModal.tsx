@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import type { Stock } from '../types/stock';
+import React, { useState } from "react";
+import { X } from "lucide-react";
+import type { Annotation, Stock } from "../types/stock";
 
 interface EditStockModalProps {
   stock: Stock;
@@ -8,24 +8,62 @@ interface EditStockModalProps {
   onSave: (updatedStock: Partial<Stock>) => void;
 }
 
-export function EditStockModal({ stock, onClose, onSave }: EditStockModalProps) {
+export function EditStockModal({
+  stock,
+  onClose,
+  onSave,
+}: EditStockModalProps) {
   const [price, setPrice] = useState(stock.currentPrice.toString());
-  const [targetPrice, setTargetPrice] = useState(stock.targetPrice?.toString() || '');
-  const [distanceNegative, setDistanceNegative] = useState(stock.distanceNegative.toString());
-  const [distancePositive, setDistancePositive] = useState(stock.distancePositive.toString());
+  const [targetPrice, setTargetPrice] = useState(
+    stock.targetPrice?.toString() || ""
+  );
+  const [distanceNegative, setDistanceNegative] = useState(
+    stock.distanceNegative.toString()
+  );
+  const [distancePositive, setDistancePositive] = useState(
+    stock.distancePositive.toString()
+  );
+  const [annotations, setAnnotations] = useState<Annotation[]>(
+    stock?.annotations || []
+  );
+
+  const [newAnnotation, setNewAnnotation] = useState("");
+  const [newAnnotationType, setNewAnnotationType] =
+    useState<Annotation["type"]>("info");
+
+  const handleAddAnnotation = () => {
+    if (newAnnotation.trim() === "") return;
+
+    const newEntry: Annotation = {
+      date: new Date(),
+      text: newAnnotation,
+      type: newAnnotationType,
+    };
+
+    setAnnotations((prev) => [newEntry, ...prev]);
+    setNewAnnotation("");
+    setNewAnnotationType("info");
+  };
+
+  const handleRemoveAnnotation = (index: number) => {
+    setAnnotations((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const updatedStock: Partial<Stock> = {
       currentPrice: parseFloat(price),
       distanceNegative: parseFloat(distanceNegative),
       distancePositive: parseFloat(distancePositive),
+      annotations,
     };
 
     if (targetPrice) {
       updatedStock.targetPrice = parseFloat(targetPrice);
-      updatedStock.upside = ((parseFloat(targetPrice) - parseFloat(price)) / parseFloat(price)) * 100;
+      updatedStock.upside =
+        ((parseFloat(targetPrice) - parseFloat(price)) / parseFloat(price)) *
+        100;
     }
 
     onSave(updatedStock);
@@ -41,9 +79,9 @@ export function EditStockModal({ stock, onClose, onSave }: EditStockModalProps) 
         >
           <X className="w-6 h-6" />
         </button>
-        
+
         <h2 className="text-2xl font-bold mb-4">Editar {stock.symbol}</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -98,6 +136,72 @@ export function EditStockModal({ stock, onClose, onSave }: EditStockModalProps) 
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Anotações
+            </label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={newAnnotation}
+                  onChange={(e) => setNewAnnotation(e.target.value)}
+                  placeholder="Adicionar anotação"
+                  className="flex-1 rounded-md border-gray-300 shadow-sm p-2 border"
+                />
+                <select
+                  value={newAnnotationType}
+                  onChange={(e) =>
+                    setNewAnnotationType(e.target.value as Annotation["type"])
+                  }
+                  className="rounded-md border-gray-300 shadow-sm p-2 border"
+                >
+                  <option value="info">Info</option>
+                  <option value="warning">Warning</option>
+                  <option value="error">Error</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={handleAddAnnotation}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Adicionar
+                </button>
+              </div>
+              <ul className="space-y-1">
+                {annotations
+                  .sort(
+                    (a, b) =>
+                      new Date(b.date).getTime() - new Date(a.date).getTime()
+                  )
+                  .map((annotation, index) => (
+                    <li
+                      key={index}
+                      className={`flex justify-between items-center p-2 rounded-md ${
+                        annotation.type === "info"
+                          ? "bg-blue-100"
+                          : annotation.type === "warning"
+                          ? "bg-yellow-100"
+                          : "bg-red-100"
+                      }`}
+                    >
+                      <span>
+                        <strong>[{annotation.type.toUpperCase()}]</strong>{" "}
+                        {annotation.text}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAnnotation(index)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        Remover
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            </div>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
