@@ -187,7 +187,18 @@ export function EditStockModal({
                           : "bg-red-100"
                       }`}
                     >
-                      <span>{annotation.text}</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "10px",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <span style={{ fontSize: "8px" }}>
+                          {annotation.date.toISOString()}
+                        </span>
+                        <span>{annotation.text}</span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveAnnotation(index)}
