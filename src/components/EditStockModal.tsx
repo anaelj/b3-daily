@@ -187,10 +187,7 @@ export function EditStockModal({
                           : "bg-red-100"
                       }`}
                     >
-                      <span>
-                        <strong>[{annotation.type.toUpperCase()}]</strong>{" "}
-                        {annotation.text}
-                      </span>
+                      <span>{annotation.text}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveAnnotation(index)}
