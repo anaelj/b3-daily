@@ -49,7 +49,17 @@ export function StockCard({
     <>
       <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">{stock.symbol}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            <a
+              href={`https://statusinvest.com.br/acoes/${stock.symbol}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+              style={{ cursor: "pointer" }}
+            >
+              {stock.symbol}
+            </a>
+          </h2>
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-gray-600">
               Score: {stock.score}
