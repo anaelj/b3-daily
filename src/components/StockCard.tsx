@@ -115,8 +115,8 @@ export function StockCard({
               <p
                 style={{ fontSize: "12px" }}
                 className={
-                  stock?.averagePercent200 > stock.distancePositive ||
-                  stock?.averagePercent200 < -1 * stock.distanceNegative
+                  (stock?.averagePercent200 || 0) > stock.distancePositive ||
+                  (stock?.averagePercent200 || 0) < -1 * stock.distanceNegative
                     ? "text-green-600"
                     : "text-gray-600"
                 }
@@ -124,7 +124,7 @@ export function StockCard({
                 M.200: R${" "}
                 {`${stock.media200.toFixed(
                   2
-                )} [${stock?.averagePercent200.toFixed(2)}%]`}
+                )} [${stock?.averagePercent200?.toFixed(2)}%]`}
               </p>
             )}
           </div>
@@ -136,7 +136,9 @@ export function StockCard({
                 </p>
                 <p
                   className={
-                    stock?.upside > 20 ? "text-green-600" : "text-gray-600"
+                    (stock?.upside || 0) > 20
+                      ? "text-green-600"
+                      : "text-gray-600"
                   }
                 >
                   Upside: {stock.upside?.toFixed(2)}%
@@ -174,7 +176,19 @@ export function StockCard({
                     <X className="w-4 h-4 text-red-600" />
                   )}
                 </div>
-                <span className="text-sm text-gray-700">{label}</span>
+                {key === "insider" ? (
+                  <a
+                    href={`https://www.fundamentus.com.br/insiders.php?papel=${stock.symbol}&tipo=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-700 hover:underline"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {label}
+                  </a>
+                ) : (
+                  <span className="text-sm text-gray-700">{label}</span>
+                )}
               </div>
             ))}
           </div>

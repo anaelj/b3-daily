@@ -25,6 +25,16 @@ export interface Stock {
   media200?: number;
   observerTo?: "C" | "V";
   dateLastCheck?: string;
+  averagePercent200?: number;
+  plAverage?: number;
+  pl?: number;
+  plTarget?: number;
+  plTargetPercent?: number;
+  plTargetPrice?: number;
+  dividendYield?: number;
+  dividendYieldTarget?: number;
+  dividendYieldTargetPercent?: number;
+  dividendYieldTargetPrice?: number;
 }
 
 export interface StockAPIResponse {
