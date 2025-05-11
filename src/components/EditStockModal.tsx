@@ -173,9 +173,9 @@ export function EditStockModal({
                   }
                   className="rounded-md border-gray-300 shadow-sm p-2 border"
                 >
-                  <option value="info">Info</option>
-                  <option value="warning">Warning</option>
-                  <option value="error">Error</option>
+                  <option value="info">Normal</option>
+                  <option value="warning">Atenção</option>
+                  <option value="error">Importante</option>
                 </select>
                 <button
                   type="button"
