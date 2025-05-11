@@ -35,8 +35,10 @@ export function EditStockModal({
   const handleAddAnnotation = () => {
     if (newAnnotation.trim() === "") return;
 
+    const now = new Date();
+
     const newEntry: Annotation = {
-      date: new Date(),
+      date: now.toString(),
       text: newAnnotation,
       type: newAnnotationType,
     };
@@ -44,10 +46,22 @@ export function EditStockModal({
     setAnnotations((prev) => [newEntry, ...prev]);
     setNewAnnotation("");
     setNewAnnotationType("info");
+
+    const updatedStock: Partial<Stock> = {
+      ...stock,
+      annotations: [newEntry, ...annotations],
+    };
+    onSave(updatedStock);
   };
 
   const handleRemoveAnnotation = (index: number) => {
-    setAnnotations((prev) => prev.filter((_, i) => i !== index));
+    const updatedAnnotations = annotations.filter((_, i) => i !== index);
+    setAnnotations(updatedAnnotations);
+    const updatedStock: Partial<Stock> = {
+      ...stock,
+      annotations: updatedAnnotations,
+    };
+    onSave(updatedStock);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -195,7 +209,7 @@ export function EditStockModal({
                           flexDirection: "column",
                         }}
                       >
-                        <span style={{ fontSize: "8px" }}>
+                        <span style={{ fontSize: "10px" }}>
                           {`Data: ${formatDate(annotation?.date?.toString())}`}
                         </span>
                         <span>{annotation.text}</span>

@@ -39,7 +39,7 @@ export interface Stock {
 }
 
 export interface Annotation {
-  date: Date;
+  date: string;
   text: string;
   type: "info" | "warning" | "error";
 }

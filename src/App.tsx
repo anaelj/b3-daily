@@ -18,7 +18,6 @@ import { StockCard } from "./components/StockCard";
 import type { Stock } from "./types/stock";
 import { validateCPF } from "./utils/cpf";
 import { fetchStockData } from "./services/stockApi";
-import { fetchInsiderData } from "./services/insiderApi";
 
 function App() {
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -182,6 +181,10 @@ function App() {
 
   const handleStockUpdate = async (symbol: string, updates: Partial<Stock>) => {
     let onLineData;
+
+    console.log("Atualizando dados da ação@@##:", symbol);
+    console.log("Dados antigos@@##:", updates);
+
     try {
       onLineData = await getCurrentStockData(updates, symbol);
     } catch (error) {

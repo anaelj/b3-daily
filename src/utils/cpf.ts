@@ -1,5 +1,7 @@
 export function validateCPF(cpf: string): boolean {
-  cpf = cpf.replace(/[^\d]/g, '');
+  if (!cpf) return false;
+
+  cpf = cpf.replace(/[^\d]/g, "");
 
   if (cpf.length !== 11) return false;
 
